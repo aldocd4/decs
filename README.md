@@ -66,7 +66,7 @@ entity.kill();
 
 ### Components
 
-An component must be represented as a struct.
+A component must be represented as a struct.
 
 ```cs
 struct PositionComponent
@@ -92,7 +92,7 @@ if(entity.has!PositionComponent())
 ```
 ### Systems
 
-An system must be a class that inherits **decs.System**.
+A system must be a class that inherits **decs.System**.
 
 ```cs
 class MovementSystem : System
@@ -109,7 +109,7 @@ There is 2 ways to query entities from your system :
 * 2 => Using the components filter mixin **mixin ComponentsFilter!(components...);**
 
 
-If you provide an components filter, when an entity is activated, it will be automatically added to the systems whose filters match her components.
+If you provide a components filter, when an entity is activated, it will be automatically added to the systems whose filters match her components.
 
 ```cs
 class MovementSystem : System
@@ -158,7 +158,8 @@ wip
 
 ## TODOs
 
-* Add **@component** and **@event** UDAs
+* Add **@Component** and **@Event** UDAs
 * Add the possibility to defines systems execution order when using **em.update(dt)**
 * Add anexample project
 * Improve this readme
+* DOCS !
