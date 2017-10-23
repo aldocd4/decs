@@ -8,9 +8,9 @@ I'm not really an game dev, im trying to learn how an ECS works so some portions
 
 It's inspired by the following projects : 
 
-https://github.com/miguelmartin75/anax  => C++ ECS
-https://github.com/jzhu98/star-entity   => D ECS
-https://github.com/claudemr/entitysysd  => D ECS
+* https://github.com/miguelmartin75/anax  => C++ ECS
+* https://github.com/jzhu98/star-entity   => D ECS
+* https://github.com/claudemr/entitysysd  => D ECS
 
 ## How to build
 
