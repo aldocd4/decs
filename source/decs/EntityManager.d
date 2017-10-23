@@ -30,7 +30,7 @@ class EntityManager
 
     public this(in size_t componentsPoolSize = 50) nothrow @safe @nogc
     {
-        this.m_components = DynamicArray!IComponentPool(componentsPool);
+        this.m_components = DynamicArray!IComponentPool(componentsPoolSize);
 
         this.m_eventManager = nogcNew!(EventManager)();
         this.m_systemManager = nogcNew!(SystemManager)(this, this.m_eventManager);
