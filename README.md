@@ -1,4 +1,4 @@
-/** Works in progress **/
+/** Work in progress **/
 
 decs
 ===========
