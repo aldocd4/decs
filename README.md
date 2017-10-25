@@ -4,7 +4,7 @@ decs
 ===========
 
 decs is my attempt to build a @nogc D language Entity Component System. 
-I'm not really an game dev, im trying to learn how an ECS works so some portions of this code can be inefficients or bug prone.
+I'm not really a game dev, im trying to learn how an ECS works so some portions of this code can be inefficients or bug prone.
 
 It's inspired by the following projects : 
 
