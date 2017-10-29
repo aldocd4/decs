@@ -7,7 +7,7 @@ struct Entity
     private EntityManager m_em;
     private Id m_id = Id.Invalid;
 
-    public this(EntityManager em ) pure nothrow @safe @nogc
+    public this(EntityManager em) pure nothrow @safe @nogc
     {
         this.m_em = em;
         this.m_id = Id.Invalid;
@@ -72,12 +72,12 @@ struct Entity
      */
     public void invalidate() nothrow @safe @nogc
     {
-        this.m_id = Id.Invalid;
+        this.m_id.state = Id.State.Invalid;
     }
 
     public bool isValid() const pure nothrow @safe @nogc
     {
-        return this.m_id != Id.Invalid;
+        return this.m_id.state != Id.State.Invalid;
     }
 
     @property
@@ -89,13 +89,22 @@ struct Entity
 
 struct Id
 {
+    public enum State
+    {
+        Valid,
+        Invalid
+    }
+
     static immutable Id Invalid = Id();
 
     private size_t m_index;
 
+    private State m_state = State.Invalid;
+
     public this(in size_t index) pure nothrow @safe @nogc
     {
         this.m_index = index;
+        this.m_state = State.Valid;
     }
 
     public bool opEquals()(in auto ref Id rhs) const pure nothrow @safe @nogc
@@ -129,6 +138,17 @@ struct Id
         public void index(in size_t value) pure nothrow @safe @nogc
         {
             this.m_index = value;
+            this.m_state = State.Valid;
+        }
+
+        public State state() const pure nothrow @safe @nogc
+        {
+            return this.m_state;
+        }
+
+        public void state(in State value) pure nothrow @safe @nogc
+        {
+            this.m_state = value;
         }
     }
 }

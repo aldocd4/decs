@@ -140,6 +140,8 @@ class EntityManager
      */
     public void activateEntity(ref Entity entity) nothrow @trusted @nogc
     {
+        assert(entity.isValid, "Entity is invalid");
+
         this.m_systemManager.onEntityActivated(entity, this.m_componentMasks[entity.id.index]);
     }
 
