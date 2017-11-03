@@ -84,7 +84,7 @@ class SystemManager
      *      entity :
      *      entityComponentsMask : entity's components mask
      */
-    public void onEntityKilled(in ref Entity entity, BoolArray entityComponentsMask)
+    public void onEntityKilled(ref Entity entity, BoolArray entityComponentsMask)
     {
         foreach(system; this.m_systems)
         {

@@ -105,7 +105,7 @@ class EntityManager
         return Entity(this, id);
     }
 
-    public void accomodateEntity(in uint index) nothrow
+    public void accomodateEntity(in size_t index) nothrow
     {
         immutable nextIndex = index + 1;
 

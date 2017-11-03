@@ -123,7 +123,7 @@ abstract class System
     /**
      * A new entity that satisfies current system's components filter has been killed
      */
-    public void onEntityKilled(in ref Entity entity)
+    public void onEntityKilled(ref Entity entity)
     {
         import std.algorithm;
 

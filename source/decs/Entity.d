@@ -80,6 +80,11 @@ struct Entity
         return this.m_id.state != Id.State.Invalid;
     }
 
+    public int opCmp(in ref Entity rhs) const pure nothrow @safe
+	{
+        return this.m_id.opCmp(rhs.id);
+	}
+
     @property
     public ref const(Id) id() const pure nothrow @safe @nogc
     {
