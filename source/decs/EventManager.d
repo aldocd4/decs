@@ -49,7 +49,13 @@ class EventManager
 
             this.m_receivers.insert(receivers);
         }
-        else this.m_receivers[eventId].insert(receiver);
+        else
+        {
+            auto receivers = this.m_receivers[eventId];
+            receivers.insert(receiver);
+
+            this.m_receivers[eventId] = receivers;
+        }
     }
 
     /**
