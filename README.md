@@ -54,7 +54,7 @@ You can create an entity, kill it, invalidate it or activate it (still need some
 ```cs
 auto entity = em.createEntity();
 
-// Notifies all systems that a new entity is alive (check system section to understand this part)
+// Notifies all systems that a new entity is alive (check [systems section](#system) to understand this part)
 entity.activate();
 
 // Entity is still alive but will be invalid in current scope
@@ -105,8 +105,8 @@ class MovementSystem : System
 ```
 There is 2 ways to query entities from your system : 
 
-* 1 => Using entity manager **entities!(components...)** function
-* 2 => Using the components filter mixin **mixin ComponentsFilter!(components...);**
+* 1 => Using entity manager **entities!(components...)** method
+* 2 => Using the mixin template **mixin ComponentsFilter!(components...);**
 
 
 If you provide a components filter, when an entity is activated, it will be automatically added to the systems whose filters match her components.
@@ -154,12 +154,56 @@ while(game)
 
 ### Events
 
-wip
+A receiver is a class that implements **Receiver(EventType)** interface.
+
+```cs
+// An event must be a struct
+struct MovementEvent
+{
+    Entity target;
+}
+
+// The receiver
+class CameraSystem : Receiver!MovementEvent
+{
+    /**
+     * Movement event received from a system
+     */
+    public void receive(ref MovementEvent event)
+    {
+        // follow event.entity...
+    }
+}
+
+// Subscribe to events
+void main()
+{
+    auto cameraSys = new CameraSystem();
+
+    auto em = new EntityManager();
+    em.subscribeToEvent!MovementEvent(cameraSys);
+}
+```
+
+You can send events from systems by using the **m_eventManager.emit** method.
+
+```cs
+// Sending an event from the MovementSystem
+class MovementSystem : Receiver!MovementEvent
+{
+    public void update(in float deltaTime)
+    {
+        foreach(entity; this.m_entities)
+        {
+            this.m_eventManager.emit(MovementEvent(entity));
+        }
+    }
+}
+```
 
 ## TODOs
 
 * Add **@Component** and **@Event** UDAs
-* Add the possibility to defines systems execution order when using **em.update(dt)**
-* Add anexample project
+* Add an example project
 * Improve this readme
 * DOCS !
