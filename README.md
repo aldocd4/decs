@@ -54,7 +54,7 @@ You can create an entity, kill it, invalidate it or activate it (still need some
 ```cs
 auto entity = em.createEntity();
 
-// Notifies all systems that a new entity is alive (check [Systems][] to understand this part)
+// Notifies all systems that a new entity is alive
 entity.activate();
 
 // Entity is still alive but will be invalid in current scope
