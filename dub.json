@@ -7,5 +7,6 @@
 		"dnogc": "~master"
 	},
 	"description": "@nogc D Entity Component System",
-	"license": "Boost Software License"
+	"license": "Boost Software License",
+	"version": "1.0.1"
 }
