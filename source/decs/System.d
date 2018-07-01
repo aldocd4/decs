@@ -71,7 +71,7 @@ abstract class System
     protected EntityManager m_entityManager;
     protected EventManager m_eventManager;
 
-    protected DynamicArray!(Entity) m_entities;
+    protected DynamicArray!(Entity, true) m_entities;
 
     protected UpdatePolicy m_updatePolicy;
 
