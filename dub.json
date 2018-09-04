@@ -4,7 +4,6 @@
 		"aldo"
 	],
 	"dependencies": {
-		"dnogc": "~>1.0.0",
 		"dlib": "~>0.14.0"
 	},
 	"description": "@nogc D Entity Component System",
