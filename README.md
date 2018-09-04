@@ -20,7 +20,7 @@ Add this project as a dependency to your **dub.json**:
 
 ```json
 "dependencies": {
-    "decs": "~>1.0.2"
+    "decs": "~>1.0.3"
 }
 ```
 
