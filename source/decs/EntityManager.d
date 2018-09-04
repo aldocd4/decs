@@ -2,8 +2,8 @@ module decs.EntityManager;
 
 debug import std.stdio;
 
-import dnogc.DynamicArray;
-import dnogc.Utils;
+import dlib.container.array;
+import dlib.core.memory;
 
 import decs.System;
 import decs.SystemManager;
@@ -16,8 +16,9 @@ alias BoolArray = DynamicArray!bool;
 
 class EntityManager
 {
+    enum COMPONENTS_POOL_SIZE = 50;
     /// [ Component1[entity1, entity2...] , Component2[entity1, entity2...] ...]
-    private DynamicArray!(IComponentPool) m_components;
+    private DynamicArray!(IComponentPool, COMPONENTS_POOL_SIZE) m_components;
 
     /// [ Entity1[component1, component2...] , Entity2[component1, component2...] ...]
     private DynamicArray!(BoolArray) m_componentMasks;
@@ -28,12 +29,10 @@ class EntityManager
     private SystemManager m_systemManager;
     private EventManager m_eventManager;
 
-    public this(in size_t componentsPoolSize = 50) nothrow @safe @nogc
+    public this()
     {
-        this.m_components = DynamicArray!IComponentPool(componentsPoolSize);
-
-        this.m_eventManager = nogcNew!(EventManager)();
-        this.m_systemManager = nogcNew!(SystemManager)(this, this.m_eventManager);
+        this.m_eventManager = new EventManager();
+        this.m_systemManager = new SystemManager(this, this.m_eventManager);
     }
 
     public void dispose()
@@ -45,17 +44,17 @@ class EntityManager
 
         foreach(mask; this.m_componentMasks)
         {
-            mask.dispose();
+            mask.free();
         }
 
-        this.m_components.dispose();
-        this.m_componentMasks.dispose();
-        this.m_freeIds.dispose();
+        this.m_components.free();
+        this.m_componentMasks.free();
+        this.m_freeIds.free();
         this.m_systemManager.dispose();
         this.m_eventManager.dispose();
 
-        nogcDel!(SystemManager)(this.m_systemManager);
-        nogcDel!(EventManager)(this.m_eventManager);
+        Delete(this.m_systemManager);
+        Delete(this.m_eventManager);
     }
 
     public void update(in float deltaTime)
@@ -68,7 +67,7 @@ class EntityManager
      * Params:
      *      system :
      */
-    public void addSystem(System system) nothrow @safe @nogc
+    public void addSystem(System system)
     {
         this.m_systemManager.add(system);
     }
@@ -78,7 +77,7 @@ class EntityManager
      * Params:
      *      receiver :
      */
-    public void subscribeToEvent(Event)(Receiver!Event receiver) nothrow @safe @nogc
+    public void subscribeToEvent(Event)(Receiver!Event receiver)
     {
         this.m_eventManager.subscribe(receiver);
     }
@@ -90,7 +89,7 @@ class EntityManager
     {
         auto id = Id();
 
-        if(this.m_freeIds.empty())
+        if(this.m_freeIds.length() == 0)
         {
             id.index = this.m_currentIndex;
 
@@ -98,14 +97,14 @@ class EntityManager
         }
         else
         {
-            id.index = this.m_freeIds.back;
-            this.m_freeIds.removeBack();
+            id.index = this.m_freeIds[this.m_freeIds.length() - 1];
+            this.m_freeIds.removeBack(1);
         }
 
         return Entity(this, id);
     }
 
-    public void accomodateEntity(in size_t index) nothrow
+    public void accomodateEntity(in size_t index)
     {
         immutable nextIndex = index + 1;
 
@@ -114,11 +113,14 @@ class EntityManager
             // Expand component mask array
             if(this.m_componentMasks.length < nextIndex)
             {
-                auto mask = BoolArray(this.m_components.length);
-                mask.length = this.m_components.length;
-                mask[] = false;
+                auto mask = BoolArray();
 
-                this.m_componentMasks.insert(mask);
+                for (int i = 0; i < this.m_components.length(); i++)
+                {
+                    mask.insertBack(false);
+                }
+
+                this.m_componentMasks.insertBack(mask);
             }
 
             // Expand all component arrays
@@ -138,7 +140,7 @@ class EntityManager
      * Activates an entity
      * Systems are notified that a new entity has been activated
      */
-    public void activateEntity(ref Entity entity) nothrow @trusted @nogc
+    public void activateEntity(ref Entity entity)
     {
         assert(entity.isValid, "Entity is invalid");
 
@@ -153,13 +155,13 @@ class EntityManager
     {
         immutable index = id.index;
 
-        this.m_freeIds.insert(id.index);
+        this.m_freeIds.insertBack(id.index);
 
         // Notifying systems that an entity has been killed
         auto entity = Entity(this, id);
         this.m_systemManager.onEntityKilled(entity, this.m_componentMasks[index]);
 
-        this.m_componentMasks[index][] = false;
+        this.m_componentMasks[index].data[] = false;
     }
 
     /**
@@ -168,7 +170,7 @@ class EntityManager
      *		id :
      *		component :
      */
-    public void addComponent(C)(in ref Id id, C component) @safe @nogc
+    public void addComponent(C)(in ref Id id, C component)
     {
         immutable componentId = this.checkAndAccomodateComponent!C();
 
@@ -180,13 +182,14 @@ class EntityManager
         pool.set(id.index, component);
 
         // Set the mask
-        this.m_componentMasks[id.index][componentId] = true;
+        // TODO : dlib.array bug ? I need to type .data before accessing mask
+        this.m_componentMasks.data[id.index][componentId] = true;
     }
 
     /**
      * Checks if a component is already known by the entity manager
      */
-    public int checkAndAccomodateComponent(C)() @safe @nogc
+    public int checkAndAccomodateComponent(C)()
     {
         immutable componentId = ComponentCounter!(C).getId();
 
@@ -205,17 +208,18 @@ class EntityManager
      * Params:
      *		componentId :
      */
-    private void accomodateComponent(C)(in int componentId) @safe @nogc
+    private void accomodateComponent(C)(in int componentId)
     {
         // Expanding component pool
-        this.m_components.insert(nogcNew!(ComponentPool!C)(this.m_currentIndex));
+        auto componentPool = New!(ComponentPool!C)(this.m_currentIndex);
+        this.m_components.insertBack(componentPool);
 
         // Expanding all components masks to include a new component
         if(this.m_componentMasks.length > 0 && this.m_componentMasks[0].length <= componentId)
         {
             foreach(ref componentMask; this.m_componentMasks)
             {
-                componentMask.insert(false);
+                componentMask.insertBack(false);
             }
         }
     }
@@ -225,7 +229,7 @@ class EntityManager
      * Params:
      *		id :
      */
-    public C* getComponent(C)(in ref Id id) nothrow @safe @nogc
+    public C* getComponent(C)(in ref Id id)
     {
         immutable componentId = this.checkAndAccomodateComponent!C();
 
@@ -236,7 +240,7 @@ class EntityManager
     /**
      * Checks if an entity own a specific component
      */
-    public bool hasComponent(C)(in ref Id id) nothrow @safe @nogc
+    public bool hasComponent(C)(in ref Id id)
     {
         immutable componentId = this.checkAndAccomodateComponent!C();
 
@@ -246,7 +250,7 @@ class EntityManager
     /**
      * Returns a range containing entities with the specified components
      */
-    auto entities(Components...)() @trusted
+    auto entities(Components...)()
     {
         import std.algorithm;
         import std.array;
@@ -258,7 +262,7 @@ class EntityManager
 
         auto mask = this.getComponentsMask!Components();
 
-        bool hasComponents(in Entity entity) pure nothrow @trusted @nogc
+        bool hasComponents(in Entity entity)
         {
             // We loop all components for current range entity
             // and verify if he own the components
@@ -277,7 +281,7 @@ class EntityManager
         auto entities = this[].filter!(hasComponents)().array;
 
         // @nogc killer
-        mask.dispose();
+        mask.free();
 
         return entities;
     }
@@ -285,11 +289,14 @@ class EntityManager
     /**
      * Returns a mask with the specified components
      */
-    public BoolArray getComponentsMask(Components...)() nothrow @safe @nogc
+    public BoolArray getComponentsMask(Components...)()
     {
-        auto mask = BoolArray(this.m_components.length);
-        mask.length = this.m_components.length;
-        mask[] = false;
+        auto mask = BoolArray();
+
+        for (int i = 0; i < this.m_components.length(); i++)
+        {
+            mask.insertBack(false);
+        }
 
         foreach(component; Components)
         {
@@ -301,7 +308,7 @@ class EntityManager
                 // Nop, we accomodate it
                 this.accomodateComponent!component(componentId);
 
-                mask.insert(true);
+                mask.insertBack(true);
             }
             else
             {
@@ -312,12 +319,12 @@ class EntityManager
         return mask;
     }
 
-    public Entity getEntityByIndex(in uint index) pure nothrow @safe @nogc
+    public Entity getEntityByIndex(in uint index)
     {
         return Entity(this, Id(index));
     }
 
-    public EntityRange opSlice() pure nothrow @safe @nogc
+    public EntityRange opSlice()
     {
         return EntityRange(this);
     }
@@ -329,35 +336,35 @@ struct EntityRange
 
     private uint m_index;
 
-    private this(EntityManager em, in uint index = 0) pure nothrow @safe @nogc
+    private this(EntityManager em, in uint index = 0) 
     {
         this.m_em = em;
         this.m_index = index;
     }
 
-    public void popFront() pure nothrow @safe @nogc
+    public void popFront()
     {
         this.m_index++;
     }
 
-    public EntityRange save() pure nothrow @safe @nogc
+    public EntityRange save()
     {
         return EntityRange(this.m_em, this.m_index);
     }
 
     @property
     {
-        public size_t length() const pure nothrow @safe @nogc
+        public size_t length() const
         {
             return this.m_em.m_currentIndex;
         }
 
-        public bool empty() const pure nothrow @safe @nogc
+        public bool empty() const
         {
             return this.m_index >= this.m_em.m_currentIndex;
         }
 
-        public Entity front() pure nothrow @safe @nogc
+        public Entity front()
         {
             return this.m_em.getEntityByIndex(this.m_index);
         }

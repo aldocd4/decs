@@ -1,6 +1,6 @@
 module decs.EventManager;
 
-import dnogc.DynamicArray;
+import dlib.container.array;
 
 interface IReceiver
 {
@@ -18,7 +18,7 @@ class EventManager
 {
     private DynamicArray!(ReceiverArray) m_receivers;
 
-    public this() pure nothrow @safe @nogc
+    public this()
     {
 
     }
@@ -27,16 +27,16 @@ class EventManager
     {
         foreach(ref receiver; this.m_receivers)
         {
-            receiver.dispose();
+            receiver.free();
         }
 
-        this.m_receivers.dispose();
+        this.m_receivers.free();
     }
 
     /**
      * Subscribes to an event
      */
-    public void subscribe(Event)(Receiver!Event receiver) nothrow @trusted
+    public void subscribe(Event)(Receiver!Event receiver)
     {
         immutable eventId = EventCounter!(Event).getId();
 
@@ -45,14 +45,14 @@ class EventManager
         {
             // No, we add it
             auto receivers = ReceiverArray();
-            receivers.insert(receiver);
+            receivers.insertBack(receiver);
 
-            this.m_receivers.insert(receivers);
+            this.m_receivers.insertBack(receivers);
         }
         else
         {
             auto receivers = this.m_receivers[eventId];
-            receivers.insert(receiver);
+            receivers.insertBack(receiver);
 
             this.m_receivers[eventId] = receivers;
         }
@@ -88,7 +88,7 @@ struct EventCounter(Event)
 {
     private GlobalEventCounter globalEventCounter;
 
-    public static uint getId() nothrow @safe @nogc
+    public static uint getId()
     {
         static uint counter = -1;
 

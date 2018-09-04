@@ -1,32 +1,34 @@
 module decs.ComponentPool;
 
-import dnogc.DynamicArray;
+import dlib.container.array;
 
 interface IComponentPool
 {
     public void dispose();
-    public void expand() nothrow @safe @nogc;
-    public size_t length() const pure nothrow @safe @nogc;
+    public void expand();
+    public size_t length();
 }
 
 class ComponentPool(T) : IComponentPool
 {
-    private DynamicArray!T m_components;
+    private DynamicArray!(T) m_components;
 
-    public this(in size_t poolSize) nothrow @safe @nogc
+    public this(in size_t poolSize)
     {
-        this.m_components = DynamicArray!T(poolSize);
-        this.m_components.length = poolSize;
+        while (this.m_components.length < poolSize)
+        {
+            this.expand();
+        }
     }
 
     public void dispose()
     {
-        this.m_components.dispose();
+        this.m_components.free();
     }
 
-    public void insert()(auto ref T component) nothrow @safe @nogc
+    public void insert()(auto ref T component)
     {
-        this.m_components.insert(component);
+        this.m_components.insertBack(component);
     }
 
     /**
@@ -34,13 +36,13 @@ class ComponentPool(T) : IComponentPool
      * Params:
      *      index : 
      */
-    public T* get(in uint index) pure nothrow @trusted @nogc
+    public T* get(in uint index)
     {
         assert(index < this.m_components.length);
 
         immutable ptr = index * T.sizeof;
 
-        auto data = this.m_components.ptr;
+        auto data = this.m_components.data.ptr;
 
         return cast(T*)data[ptr..(ptr + T.sizeof)];
     }
@@ -51,7 +53,7 @@ class ComponentPool(T) : IComponentPool
      *      index : 
      *      component :
      */
-    public void set(in uint index, ref T component) pure nothrow @safe @nogc
+    public void set(in uint index, ref T component)
     {
         assert(index < this.m_components.length);
 
@@ -61,13 +63,13 @@ class ComponentPool(T) : IComponentPool
     /**
      * Expands the pool with an empty value
      */
-    public void expand() nothrow @safe @nogc
+    public void expand()
     {
-        this.m_components.insert(T());
+        this.m_components.insertBack(T());
     }
 
     @property
-    public size_t length() const pure nothrow @safe @nogc
+    public size_t length()
     {
         return this.m_components.length;
     }

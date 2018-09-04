@@ -7,19 +7,17 @@ import decs.EventManager;
 import decs.System;
 import decs.Entity;
 
-import dnogc.DynamicArray;
+import dlib.container.array;
 
 class SystemManager
 {
-    private DynamicArray!(System) m_systems;
+    private System[] m_systems;
 
     private EventManager m_eventManager;
     private EntityManager m_entityManager;
 
-    public this(EntityManager entityManager, EventManager eventManager) nothrow @safe @nogc
+    public this(EntityManager entityManager, EventManager eventManager)
     {
-        this.m_systems = DynamicArray!System(50);
-
         this.m_entityManager = entityManager;
         this.m_eventManager = eventManager;
     }
@@ -30,8 +28,6 @@ class SystemManager
         {
             system.dispose();
         }
-
-        this.m_systems.dispose();
     }
 
     public void update(in float deltaTime)
@@ -45,14 +41,14 @@ class SystemManager
         }
     }
 
-    public void add(System system) nothrow @safe @nogc
+    public void add(System system)
     {
         system.eventManager = this.m_eventManager;
         system.entityManager = this.m_entityManager;
 
         system.registerComponents();
 
-        this.m_systems.insert(system);
+        this.m_systems ~= system;
     }
 
     /**
@@ -61,7 +57,7 @@ class SystemManager
      *      entity :
      *      entityComponentsMask : entity's components mask
      */
-    public void onEntityActivated(ref Entity entity, BoolArray entityComponentsMask) nothrow @safe @nogc
+    public void onEntityActivated(ref Entity entity, BoolArray entityComponentsMask)
     {
         // We check if entity's components satisfies each system
         foreach(system; this.m_systems)

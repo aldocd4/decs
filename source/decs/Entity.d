@@ -7,13 +7,13 @@ struct Entity
     private EntityManager m_em;
     private Id m_id = Id.Invalid;
 
-    public this(EntityManager em) pure nothrow @safe @nogc
+    public this(EntityManager em)
     {
         this.m_em = em;
         this.m_id = Id.Invalid;
     }
 
-    public this()(EntityManager em, in auto ref Id id) pure nothrow @safe @nogc
+    public this()(EntityManager em, in auto ref Id id)
     {
         this.m_em = em;
         this.m_id = id;
@@ -22,7 +22,7 @@ struct Entity
     /**
      * Adds component for this entity
      */
-    public void add(C)(C component) nothrow @safe @nogc
+    public void add(C)(C component)
     {
         assert(this.m_em !is null);
 
@@ -32,7 +32,7 @@ struct Entity
     /**
      * Returns component of this entity
      */
-    public C* get(C)() nothrow @safe @nogc
+    public C* get(C)()
     {
         assert(this.m_em !is null);
 
@@ -42,7 +42,7 @@ struct Entity
     /**
      * Checks if this entity own a specific component
      */
-    public bool has(C)() nothrow @safe @nogc
+    public bool has(C)()
     {
         assert(this.m_em !is null);
 
@@ -60,7 +60,7 @@ struct Entity
         this.m_id = Id.Invalid;
     }
 
-    public void activate() nothrow @safe @nogc
+    public void activate()
     {
         assert(this.m_em !is null);
 
@@ -70,23 +70,23 @@ struct Entity
     /**
      * Invalidates current entity, but its still a living entity
      */
-    public void invalidate() nothrow @safe @nogc
+    public void invalidate()
     {
         this.m_id.state = Id.State.Invalid;
     }
 
-    public bool isValid() const pure nothrow @safe @nogc
+    public bool isValid() const
     {
         return this.m_id.state != Id.State.Invalid;
     }
 
-    public int opCmp(in ref Entity rhs) const pure nothrow @safe
+    public int opCmp(in ref Entity rhs) const
 	{
         return this.m_id.opCmp(rhs.id);
 	}
 
     @property
-    public ref const(Id) id() const pure nothrow @safe @nogc
+    public ref const(Id) id() const
     {
         return this.m_id;
     }
@@ -106,18 +106,18 @@ struct Id
 
     private State m_state = State.Invalid;
 
-    public this(in size_t index) pure nothrow @safe @nogc
+    public this(in size_t index)
     {
         this.m_index = index;
         this.m_state = State.Valid;
     }
 
-    public bool opEquals()(in auto ref Id rhs) const pure nothrow @safe @nogc
+    public bool opEquals()(in auto ref Id rhs) const
     {
         return this.m_index == rhs.index;
     }
 
-    public int opCmp(in ref Id rhs) const pure nothrow @safe @nogc
+    public int opCmp(in ref Id rhs) const
     {
         if (this.m_index > rhs.index)
         {
@@ -135,23 +135,23 @@ struct Id
 
     @property
     {
-        public size_t index() const pure nothrow @safe @nogc
+        public size_t index() const
         {
             return this.m_index;
         }
 
-        public void index(in size_t value) pure nothrow @safe @nogc
+        public void index(in size_t value)
         {
             this.m_index = value;
             this.m_state = State.Valid;
         }
 
-        public State state() const pure nothrow @safe @nogc
+        public State state() const
         {
             return this.m_state;
         }
 
-        public void state(in State value) pure nothrow @safe @nogc
+        public void state(in State value)
         {
             this.m_state = value;
         }

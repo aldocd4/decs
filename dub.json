@@ -4,9 +4,10 @@
 		"aldo"
 	],
 	"dependencies": {
-		"dnogc": "~master"
+		"dnogc": "~>1.0.0",
+		"dlib": "~>0.14.0"
 	},
 	"description": "@nogc D Entity Component System",
-	"license": "Boost Software License",
-	"version": "1.0.2"
+	"license": "Zlib",
+	"version": "1.0.3"
 }
