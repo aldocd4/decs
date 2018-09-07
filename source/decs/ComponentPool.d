@@ -40,11 +40,7 @@ class ComponentPool(T) : IComponentPool
     {
         assert(index < this.m_components.length);
 
-        immutable ptr = index * T.sizeof;
-
-        auto data = this.m_components.data.ptr;
-
-        return cast(T*)data[ptr..(ptr + T.sizeof)];
+        return &this.m_components.data[index];
     }
 
     /**
