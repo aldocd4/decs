@@ -1,4 +1,4 @@
-/** Work in progress **/
+This project is no longer maintened here. Please check https://github.com/evael-dev/evael-ecs/ for the update version of this project.
 
 decs
 ===========
