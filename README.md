@@ -1,4 +1,4 @@
-This project is no longer maintened here. Please check https://github.com/evael-dev/evael-ecs/ for the update version of this project.
+This project is no longer maintened here. Please check https://github.com/evael-dev/evael-ecs/ for the updated version of this project.
 
 decs
 ===========
